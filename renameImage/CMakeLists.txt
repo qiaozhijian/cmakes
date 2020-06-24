@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.10.2)
 project(renameImage)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -22,6 +22,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include
         ${EIGEN3_INCLUDE_DIR}
         ${Boost_INCLUDE_DIRS}
+        "/usr/include "
 )
 
 add_library(mylib SHARED
