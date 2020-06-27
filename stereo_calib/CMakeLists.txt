@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 3.10.2)
-project(renameImage)
+cmake_minimum_required( VERSION 2.8 )
+project( stereo_calib )
 
-set(CMAKE_CXX_STANDARD 11)
 #编译选项为-Wall O3的优化,无论是release还是debug
 #CMAKE_C_FLAGS原本为空
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
@@ -23,33 +22,31 @@ else()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-find_package(OpenCV 3.0 QUIET)
-if(NOT OpenCV_FOUND)
-    find_package(OpenCV 2.4.3 QUIET)
-    if(NOT OpenCV_FOUND)
-        message(FATAL_ERROR "OpenCV > 2.4.3 not found.")
-    endif()
-endif()
-
-find_package(Eigen3 3.1.0 REQUIRED)
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+# 寻找OpenCV库
+find_package( OpenCV 3 REQUIRED PATHS /usr/local/opencv-3.4.5)
 find_package(Boost REQUIRED COMPONENTS regex thread system filesystem)
 add_definitions(-DBOOST_NO_CXX11_SCOPED_ENUMS)
 
+# 添加头文件
 include_directories(
-        ${PROJECT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/include
-        ${EIGEN3_INCLUDE_DIR}
+        ${OpenCV_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
-        "/usr/include "
+        ${PROJECT_SOURCE_DIR}/include
 )
+
 
 add_library(mylib SHARED
         src/util.cpp
         )
-target_link_libraries(mylib
-        ${Boost_LIBRARIES})
 
-add_executable(renameImage main.cpp)
-target_link_libraries(renameImage  mylib)
+target_link_libraries(mylib
+        ${Boost_LIBRARIES}
+        ${OpenCV_LIBS}
+)
+
+# 双目标定和双目矫正
+add_executable( stereo_calib src/stereo_calib.cpp)
+# 链接OpenCV库
+target_link_libraries( stereo_calib mylib)
+
+
