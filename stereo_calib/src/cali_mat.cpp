@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
             "Camera_width", 640,
             "Camera_height", 480,
             "Camera_fps", 50.0,
-            "Camera_bf", abs(Pr.row(0).col(3)/1000.0),
+            "Camera_bf", (abs(Pr.row(0).col(3).at<double>()/1000.0)),
             "Camera_RGB", 1,
             "ThDepth", 50,
 
