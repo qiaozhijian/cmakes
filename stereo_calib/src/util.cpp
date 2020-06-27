@@ -2,6 +2,16 @@
 // Created by qzj on 2020/6/24.
 //
 #include "util.h"
+#include "opencv2/core/core.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/calib3d/calib3d.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include <iostream>
+#include <fstream>
+#include "util.h"
+#include <stdio.h>
+using namespace std;
+using namespace cv;
 
 string getDirEnd(string dataset_dir)
 {
@@ -204,5 +214,87 @@ void replace_str(std::string& str, const std::string& before, const std::string&
             str.replace(pos, before.length(), after);
         else
             break;
+    }
+}
+
+
+
+void  CheckStereoCali(string root_path, string configYaml)
+{
+    FileStorage fsSettings(configYaml, FileStorage::READ);
+    cout<<configYaml<<endl;
+    //FileStorage fsSettings(root_result_path + "data_params.yaml", FileStorage::READ);
+
+    vector<std::string> img_l_paths, img_r_paths;
+    Mat img1_rectified, img2_rectified; // 校正图像
+    getStereoSortedImages(root_path, img_l_paths, img_r_paths);
+
+    cv::Mat K_l, K_r, P_l, P_r, R_l, R_r, D_l, D_r;
+    fsSettings["LEFT_K"] >> K_l;
+    fsSettings["RIGHT_K"] >> K_r;
+
+    fsSettings["LEFT_P"] >> P_l;
+    fsSettings["RIGHT_P"] >> P_r;
+
+    fsSettings["LEFT_R"] >> R_l;
+    fsSettings["RIGHT_R"] >> R_r;
+
+    fsSettings["LEFT_D"] >> D_l;
+    fsSettings["RIGHT_D"] >> D_r;
+
+    int rows_l = fsSettings["LEFT_height"];
+    int cols_l = fsSettings["LEFT_width"];
+    int rows_r = fsSettings["RIGHT_height"];
+    int cols_r = fsSettings["RIGHT_width"];
+
+    if(K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() || R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
+       rows_l==0 || rows_r==0 || cols_l==0 || cols_r==0)
+    {
+        cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
+        return ;
+    }
+
+    cv::Mat M1l,M2l,M1r,M2r;
+    cv::initUndistortRectifyMap(K_l,D_l,R_l,P_l.rowRange(0,3).colRange(0,3),cv::Size(cols_l,rows_l),CV_32F,M1l,M2l);
+    cv::initUndistortRectifyMap(K_r,D_r,R_r,P_r.rowRange(0,3).colRange(0,3),cv::Size(cols_r,rows_r),CV_32F,M1r,M2r);
+
+    cv::Mat imLeft, imRight, imLeftRect, imRightRect;
+    vector<string>::iterator iter_l, iter_r;
+    for (iter_l = img_l_paths.begin(), iter_r = img_r_paths.begin();
+         iter_l != img_l_paths.end(); iter_l++, iter_r++) // 读取txt的每一行（每一行存放了一张标定图片的名称）
+    {
+        // Read left and right images from file
+        imLeft = cv::imread(*iter_l, CV_LOAD_IMAGE_UNCHANGED);
+        imRight = cv::imread(*iter_r, CV_LOAD_IMAGE_UNCHANGED);
+
+        if (imLeft.empty()) {
+            cerr << endl << "Failed to load image at: "
+                 << *iter_l << endl;
+            return ;
+        }
+        if (imRight.empty()) {
+            cerr << endl << "Failed to load image at: "
+                 << *iter_r << endl;
+            return ;
+        }
+
+        //cv::imshow("imRight",imRight);
+//         校正
+        cv::remap(imLeft, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
+        cv::remap(imRight, imRightRect, M1r, M2r, cv::INTER_LINEAR);
+
+        cv::Size imageSize(cols_l,rows_l);
+        cv::Mat canvas(imageSize.height, imageSize.width * 2, CV_8UC3);
+        cv::Mat canLeft = canvas(cv::Rect(0, 0, imageSize.width, imageSize.height));
+        cv::Mat canRight = canvas(cv::Rect(imageSize.width, 0, imageSize.width, imageSize.height));
+        //cout<<"canLeft: "<<imLeft.type()<<" canvas: "<<canvas.type()<<endl;
+        imLeftRect(cv::Rect(0, 0, imageSize.width, imageSize.height)).copyTo(canLeft);
+        imRightRect(cv::Rect(0, 0, imageSize.width, imageSize.height)).copyTo(canRight);
+        //cout << "done" << endl;
+        for (int j = 0; j <= canvas.rows; j += 16)
+            cv::line(canvas, cv::Point(0, j), cv::Point(canvas.cols, j), cv::Scalar(0, 255, 0), 1, 8);
+        //cout << "stereo rectify done" << endl;
+        cv::imshow("canvas",canvas);
+        cv::waitKey(0);
     }
 }

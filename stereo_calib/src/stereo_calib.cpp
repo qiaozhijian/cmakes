@@ -307,8 +307,6 @@ int main(int argc, char *argv[]) {
     string root_result_path = root_path + "/result/";
     createDirectory(root_result_path);
 
-    FileStorage storage(root_result_path + "data_params.yaml", FileStorage::WRITE);
-
     string singleCalibrate_result_L = root_result_path + "calibrationresults_L.txt";
     string singleCalibrate_result_R = root_result_path + "calibrationresults_R.txt";
     string stereoRectifyParams = root_result_path + "stereoRectifyParams.txt"; // 存放立体矫正结果
@@ -357,6 +355,8 @@ int main(int argc, char *argv[]) {
                                                    imageSize, R, T, R1, R2, P1, P2, Q, mapl1, mapl2, mapr1, mapr2);
     cout << "finish stereo Rectification" << endl;
 
+
+    FileStorage storage(root_result_path + "data_params.yaml", FileStorage::WRITE);
     storage <<
             "Camera_fx", P2.row(0).col(0),
             "Camera_fy", P2.row(1).col(1),
@@ -403,7 +403,7 @@ int main(int argc, char *argv[]) {
             "Viewer_ViewpointY", -0.7,
             "Viewer_ViewpointZ", -1.8,
             "Viewer_ViewpointF", 500;
-
+    storage.release();
     //if show == True, show image after rectification
     if (parser.get<bool>("show") == true) {
         show_Rectification_result(img_l_paths, img_r_paths, img1_rectified,

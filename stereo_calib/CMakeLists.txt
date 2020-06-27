@@ -22,15 +22,27 @@ else()
     message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+
+# 为了方便查看调试信息
+IF(CMAKE_COMPILER_IS_GNUCC)
+    message("CMAKE_COMPILER_IS_GNUCC")
+    #   针对debug
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+
 # 寻找OpenCV库
 find_package( OpenCV 3 REQUIRED PATHS /usr/local/opencv-3.4.5)
 find_package(Boost REQUIRED COMPONENTS regex thread system filesystem)
+# YAML library
+FIND_PACKAGE(yaml-cpp REQUIRED CONFIG PATHS ${YAML_PATHS})
 add_definitions(-DBOOST_NO_CXX11_SCOPED_ENUMS)
 
 # 添加头文件
 include_directories(
         ${OpenCV_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
+        ${YAML_CPP_INCLUDE_DIRS}
         ${PROJECT_SOURCE_DIR}/include
 )
 
@@ -42,11 +54,21 @@ add_library(mylib SHARED
 target_link_libraries(mylib
         ${Boost_LIBRARIES}
         ${OpenCV_LIBS}
+        ${YAML_CPP_LIBRARIES}
 )
 
 # 双目标定和双目矫正
 add_executable( stereo_calib src/stereo_calib.cpp)
 # 链接OpenCV库
 target_link_libraries( stereo_calib mylib)
+
+# 双目标定和双目矫正
+add_executable( cali_mat src/cali_mat.cpp )
+# 链接OpenCV库
+target_link_libraries( cali_mat mylib)
+
+add_executable( check src/check.cpp )
+# 链接OpenCV库
+target_link_libraries( check mylib)
 
 
