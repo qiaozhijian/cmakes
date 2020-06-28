@@ -104,10 +104,10 @@ int main(int argc, char *argv[])
     string configYaml = root_result_path + "data_params_matlab.yaml";
     FileStorage storage(configYaml, FileStorage::WRITE);
     storage <<
-            "Camera_fx", Pr.row(0).col(0),
-            "Camera_fy", Pr.row(1).col(1),
-            "Camera_cx", Pr.row(0).col(2),
-            "Camera_cy", Pr.row(1).col(2),
+            "Camera_fx", Pr.row(0).col(0).at<double>(),
+            "Camera_fy", Pr.row(1).col(1).at<double>(),
+            "Camera_cx", Pr.row(0).col(2).at<double>(),
+            "Camera_cy", Pr.row(1).col(2).at<double>(),
             "Camera_k1", 0,
             "Camera_k2", 0,
             "Camera_p1", 0,
@@ -150,5 +150,5 @@ int main(int argc, char *argv[])
             "Viewer_ViewpointZ", -1.8,
             "Viewer_ViewpointF", 500;
     storage.release();
-    CheckStereoCali(root_path, configYaml);
+    //CheckStereoCali(root_path, configYaml);
 }
