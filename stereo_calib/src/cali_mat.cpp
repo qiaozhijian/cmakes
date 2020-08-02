@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 {
 
     cv::CommandLineParser parser(argc, argv,
-                                 "{w|11|}{h|8|}{s|15|}{d|/media/qzj/Document/grow/research/slamDataSet/sweepRobot/round2/cali|}{show|true|}{help||}");
+                                 "{w|11|}{h|8|}{s|15|}{d|/media/qzj/Document/grow/research/slamDataSet/sweepRobot/round3/cali|}{show|true|}{help||}");
     if (parser.has("help")) {
         parser.printMessage();
         return 0;
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
     string root_result_path = root_path + "/result/";
     createDirectory(root_result_path);
 
-    YAML::Node fsSettings = YAML::LoadFile(root_result_path + "cali_mat.yaml");
+    YAML::Node fsSettings = YAML::LoadFile(root_result_path + "cali_matlab.yaml");
 
     cv::Mat K_l, K_r, D_l, D_r,T_lr,R_lr;
     cv::Mat Rl, Rr, Pl, Pr, Q; //校正旋转矩阵R，投影矩阵P 重投影矩阵Q
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
         {
             K_l.row(i).col(j) = fsSettings["K1"][i][j].as<double>();
             K_r.row(i).col(j) = fsSettings["K2"][i][j].as<double>();
-            R_lr.row(i).col(j) = fsSettings["rot"][i][j].as<double>();
+            R_lr.row(i).col(j) = fsSettings["rot1"][i][j].as<double>();
         }
 
     D_l = Mat::ones(5, 1, CV_64F);
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     for(int i=0;i<3;i++)
         for(int j=0;j<1;j++)
         {
-            T_lr.row(i).col(j) = fsSettings["trans"][i].as<double>();
+            T_lr.row(i).col(j) = fsSettings["trans1"][i].as<double>();
         }
 
     cout << "finish input" << endl;
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     cv::initUndistortRectifyMap(K_r,D_r,Rr,Pr.rowRange(0,3).colRange(0,3),cv::Size(cols_r,rows_r),CV_32F,M1r,M2r);
 
     cout << "finish rectify" << endl;
-    string configYaml = root_result_path + "data_params_matlab.yaml";
+    string configYaml = root_result_path + "robot_orb_stereo_new.yaml";
     FileStorage storage(configYaml, FileStorage::WRITE);
     storage <<
             "Camera_fx", Pr.row(0).col(0).at<double>(),
@@ -150,5 +150,5 @@ int main(int argc, char *argv[])
             "Viewer_ViewpointZ", -1.8,
             "Viewer_ViewpointF", 500;
     storage.release();
-    //CheckStereoCali(root_path, configYaml);
+    CheckStereoCali(root_path, configYaml);
 }

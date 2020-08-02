@@ -71,4 +71,6 @@ add_executable( check src/check.cpp )
 # 链接OpenCV库
 target_link_libraries( check mylib)
 
-
+add_executable( file src/file.cpp )
+# 链接OpenCV库
+target_link_libraries( file mylib)
