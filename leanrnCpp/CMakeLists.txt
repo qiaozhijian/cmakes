@@ -4,8 +4,8 @@ project(learncpp)
 set(CMAKE_CXX_STANDARD 11)
 #编译选项为-Wall O3的优化,无论是release还是debug
 #CMAKE_C_FLAGS原本为空
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O3 -march=native ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O3 -march=native")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall  -O0 -march=native ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall   -O0 -march=native")
 
 # Check C++11 or C++0x support,如果支持则进行编译
 include(CheckCXXCompilerFlag)
@@ -52,5 +52,11 @@ add_library(mylib SHARED
 target_link_libraries(mylib
         ${Boost_LIBRARIES})
 
-add_executable(learncpp main.cpp)
-target_link_libraries(learncpp  mylib)
+add_executable(thread thread.cpp)
+target_link_libraries(thread  mylib)
+
+add_executable(class class.cpp)
+target_link_libraries(class  mylib)
+
+add_executable(rwBin rwBin.cpp)
+target_link_libraries(rwBin  mylib)

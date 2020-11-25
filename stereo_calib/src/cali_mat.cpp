@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
     string root_result_path = root_path + "/result/";
     createDirectory(root_result_path);
 
+    //YAML::Node fsSettings = YAML::LoadFile(root_result_path + "cali_mat_new.yaml");
     YAML::Node fsSettings = YAML::LoadFile(root_result_path + "cali_mat.yaml");
 
     cv::Mat K_l, K_r, D_l, D_r,T_lr,R_lr;
@@ -103,7 +104,7 @@ int main(int argc, char *argv[])
     cv::initUndistortRectifyMap(K_r,D_r,Rr,Pr.rowRange(0,3).colRange(0,3),cv::Size(cols_r,rows_r),CV_32F,M1r,M2r);
 
     cout << "finish rectify" << endl;
-    string configYaml = root_result_path + "robot_stereo.yaml";
+    string configYaml = root_result_path + "robot_stereo_new.yaml";
     FileStorage storage(configYaml, FileStorage::WRITE);
     storage <<
             "Camera_fx", Pr.row(0).col(0).at<double>(),
@@ -153,6 +154,6 @@ int main(int argc, char *argv[])
             "Viewer_ViewpointF", 500;
     storage.release();
     //根据你自己的情况设定，这里写存放left和right的文件夹
-    string subDir = "/cali_dataset";
+    string subDir = "/cali_cam";
     CheckStereoCali(root_path + subDir, configYaml);
 }
